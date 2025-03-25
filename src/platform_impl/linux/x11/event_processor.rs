@@ -973,10 +973,14 @@ impl EventProcessor {
             }
 
             if let Some(mut key_processor) = self.xkb_context.key_context() {
-                let event = key_processor.process_key_event(keycode, state, repeat);
+                let event = key_processor.process_key_event(
+                    keycode,
+                    state,
+                    if !repeat { None } else { Some(true) },
+                );
                 let event = Event::WindowEvent {
                     window_id,
-                    event: WindowEvent::KeyboardInput { device_id, event, is_synthetic: false },
+                    event: WindowEvent::KeyboardInput { device_id, event },
                 };
                 callback(&self.target, event);
             }
@@ -1813,10 +1817,10 @@ impl EventProcessor {
         for keycode in
             window_target.xconn.query_keymap().into_iter().filter(|k| *k >= KEYCODE_OFFSET)
         {
-            let event = key_processor.process_key_event(keycode as u32, state, false);
+            let event = key_processor.process_key_event(keycode as u32, state, Some(false));
             let event = Event::WindowEvent {
                 window_id,
-                event: WindowEvent::KeyboardInput { device_id, event, is_synthetic: true },
+                event: WindowEvent::KeyboardInput { device_id, event },
             };
             callback(target, event);
         }

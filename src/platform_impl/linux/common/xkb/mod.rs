@@ -189,10 +189,13 @@ impl KeyContext<'_> {
         &mut self,
         keycode: u32,
         state: ElementState,
-        repeat: bool,
+        repeat_synthetic: Option<bool>,
     ) -> KeyEvent {
-        let mut event =
-            KeyEventResults::new(self, keycode, !repeat && state == ElementState::Pressed);
+        let mut event = KeyEventResults::new(
+            self,
+            keycode,
+            matches!(repeat_synthetic, Some(true)) && state == ElementState::Pressed,
+        );
         let physical_key = keymap::raw_keycode_to_physicalkey(keycode);
         let (logical_key, location) = event.key();
         let text = event.text();
@@ -201,7 +204,15 @@ impl KeyContext<'_> {
 
         let platform_specific = KeyEventExtra { text_with_all_modifiers, key_without_modifiers };
 
-        KeyEvent { physical_key, logical_key, text, location, state, repeat, platform_specific }
+        KeyEvent {
+            physical_key,
+            logical_key,
+            text,
+            location,
+            state,
+            repeat_synthetic,
+            platform_specific,
+        }
     }
 
     fn keysym_to_utf8_raw(&mut self, keysym: u32) -> Option<SmolStr> {

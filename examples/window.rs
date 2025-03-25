@@ -390,7 +390,7 @@ impl ApplicationHandler<UserEvent> for Application {
                     info!("Mouse wheel Pixel Delta: ({},{})", px.x, px.y);
                 },
             },
-            WindowEvent::KeyboardInput { event, is_synthetic: false, .. } => {
+            WindowEvent::KeyboardInput { event, .. } if !event.is_synthetic() => {
                 let mods = window.modifiers;
 
                 // Dispatch actions only on press.

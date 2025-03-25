@@ -202,21 +202,7 @@ pub enum WindowEvent {
     /// - **Windows:** The shift key overrides NumLock. In other words, while shift is held down,
     ///   numpad keys act as if NumLock wasn't active. When this is used, the OS sends fake key
     ///   events which are not marked as `is_synthetic`.
-    KeyboardInput {
-        device_id: DeviceId,
-        event: KeyEvent,
-
-        /// If `true`, the event was generated synthetically by winit
-        /// in one of the following circumstances:
-        ///
-        /// * Synthetic key press events are generated for all keys pressed when a window gains
-        ///   focus. Likewise, synthetic key release events are generated for all keys pressed when
-        ///   a window goes out of focus. ***Currently, this is only functional on X11 and
-        ///   Windows***
-        ///
-        /// Otherwise, this value is always `false`.
-        is_synthetic: bool,
-    },
+    KeyboardInput { device_id: DeviceId, event: KeyEvent },
 
     /// The keyboard modifiers have changed.
     ModifiersChanged(Modifiers),
@@ -613,38 +599,21 @@ pub struct KeyEvent {
     /// See the [`ElementState`] type for more details.
     pub state: ElementState,
 
-    /// Whether or not this key is a key repeat event.
+    /// `Some(true)`, event is a key repeat.
     ///
     /// On some systems, holding down a key for some period of time causes that key to be repeated
     /// as though it were being pressed and released repeatedly. This field is `true` if and only
     /// if this event is the result of one of those repeats.
     ///
-    /// # Example
+    /// `Some(false)`, the event was generated synthetically by winit
+    /// in one of the following circumstances:
     ///
-    /// In games, you often want to ignore repated key events - this can be
-    /// done by ignoring events where this property is set.
+    /// * Synthetic key press events are generated for all keys pressed when a window gains focus.
+    ///   Likewise, synthetic key release events are generated for all keys pressed when a window
+    ///   goes out of focus. ***Currently, this is only functional on X11 and Windows***
     ///
-    /// ```
-    /// use winit::event::{ElementState, KeyEvent, WindowEvent};
-    /// use winit::keyboard::{KeyCode, PhysicalKey};
-    /// # let window_event = WindowEvent::RedrawRequested; // To make the example compile
-    /// match window_event {
-    ///     WindowEvent::KeyboardInput {
-    ///         event:
-    ///             KeyEvent {
-    ///                 physical_key: PhysicalKey::Code(KeyCode::KeyW),
-    ///                 state: ElementState::Pressed,
-    ///                 repeat: false,
-    ///                 ..
-    ///             },
-    ///         ..
-    ///     } => {
-    ///         // The physical key `W` was pressed, and it was not a repeat
-    ///     },
-    ///     _ => {}, // Handle other events
-    /// }
-    /// ```
-    pub repeat: bool,
+    /// Otherwise, this value is always `None`.
+    pub repeat_synthetic: Option<bool>,
 
     /// Platform-specific key event information.
     ///
@@ -653,6 +622,16 @@ pub struct KeyEvent {
     ///
     /// On Android, iOS, Redox and Web, this type is a no-op.
     pub(crate) platform_specific: platform_impl::KeyEventExtra,
+}
+
+impl KeyEvent {
+    pub fn is_repeat(&self) -> bool {
+        matches!(self.repeat_synthetic, Some(true))
+    }
+
+    pub fn is_synthetic(&self) -> bool {
+        matches!(self.repeat_synthetic, Some(false))
+    }
 }
 
 /// Describes keyboard modifiers event.
