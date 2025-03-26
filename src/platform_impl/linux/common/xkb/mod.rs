@@ -190,6 +190,7 @@ impl KeyContext<'_> {
         keycode: u32,
         state: ElementState,
         repeat_synthetic: Option<bool>,
+        time: u32,
     ) -> KeyEvent {
         let mut event = KeyEventResults::new(
             self,
@@ -211,6 +212,7 @@ impl KeyContext<'_> {
             location,
             state,
             repeat_synthetic,
+            time,
             platform_specific,
         }
     }

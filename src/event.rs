@@ -615,6 +615,9 @@ pub struct KeyEvent {
     /// Otherwise, this value is always `None`.
     pub repeat_synthetic: Option<bool>,
 
+    /// From upstream X11/Wayland in relative milliseconds
+    pub time: u32,
+    
     /// Platform-specific key event information.
     ///
     /// On Windows, Linux and macOS, this type contains the key without modifiers and the text with

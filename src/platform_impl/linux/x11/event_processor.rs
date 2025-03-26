@@ -977,6 +977,7 @@ impl EventProcessor {
                     keycode,
                     state,
                     if !repeat { None } else { Some(true) },
+                    xev.time as u32,
                 );
                 let event = Event::WindowEvent {
                     window_id,
@@ -1290,6 +1291,7 @@ impl EventProcessor {
             ElementState::Pressed,
             &mut self.xkb_context,
             &mut callback,
+            xev.time as u32,
         );
 
         self.update_mods_from_query(window_id, &mut callback);
@@ -1347,6 +1349,7 @@ impl EventProcessor {
                 ElementState::Released,
                 &mut self.xkb_context,
                 &mut callback,
+                xev.time as u32,
             );
 
             // Clear this so detecting key repeats is consistently handled when the
@@ -1790,6 +1793,7 @@ impl EventProcessor {
         state: ElementState,
         xkb_context: &mut Context,
         callback: &mut F,
+        time: u32,
     ) where
         F: FnMut(&RootAEL, Event<T>),
     {
@@ -1817,7 +1821,7 @@ impl EventProcessor {
         for keycode in
             window_target.xconn.query_keymap().into_iter().filter(|k| *k >= KEYCODE_OFFSET)
         {
-            let event = key_processor.process_key_event(keycode as u32, state, Some(false));
+            let event = key_processor.process_key_event(keycode as u32, state, Some(false), time);
             let event = Event::WindowEvent {
                 window_id,
                 event: WindowEvent::KeyboardInput { device_id, event },
